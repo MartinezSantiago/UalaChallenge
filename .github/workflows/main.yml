@@ -1,0 +1,55 @@
+name: Build, Test, and Push Docker Image to AWS ECR
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-test-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      ECR_REGISTRY: 412931986828.dkr.ecr.us-east-2.amazonaws.com
+      IMAGE_NAME: santiagomartinez/ualachallenge
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore UalaChallenge.sln
+
+      - name: Build
+        run: dotnet build UalaChallenge.sln --configuration Release
+
+      - name: Run tests
+        run: dotnet test UalaChallenge.sln --configuration Release --no-build
+
+      - name: Publish app
+        run: dotnet publish src/API/API.csproj -c Release -o ./publish
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:latest -f docker/Dockerfile.prod .
+      
+      - name: Tag Docker image
+        run: docker tag $IMAGE_NAME:latest $ECR_REGISTRY/$IMAGE_NAME:latest
+      
+      - name: Push Docker image
+        run: docker push $ECR_REGISTRY/$IMAGE_NAME:latest
