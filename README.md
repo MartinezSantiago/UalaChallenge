@@ -57,7 +57,7 @@ Este proyecto implementa una plataforma de microblogging similar a Twitter, perm
 
 - [Docker](https://www.docker.com/) y Docker Compose instalados
 - Puertos libres:
-  - `8080` (API)
+  - `5000` (API)
   - `5432` (PostgreSQL)
   - `6379` (Redis)
 
