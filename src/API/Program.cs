@@ -85,7 +85,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddSingleton<ICacheService, CacheService>();
 
 // MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(SignUpCommand).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Application.AssemblyReference).Assembly));
 
 // JWT Authentication
 builder.Services.AddAuthentication(options =>
